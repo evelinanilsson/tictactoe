@@ -1,12 +1,14 @@
 "use client";
 
 import Square from "./components/Square";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function TickTacToe() {
   const [player, setPlayer] = useState(1);
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
 
+  const [totalMoves, setTotalMoves] = useState(0);
+  const [tie, setTie] = useState(false);
   const [player1score, setPlayer1score] = useState(0);
   const [player2score, setPlayer2score] = useState(0);
 
@@ -14,10 +16,12 @@ function TickTacToe() {
     if (calcWinner(board) || board[id]) {
       return;
     }
+  
     const newBoard = board.slice();
     newBoard[id] = player === 1 ? "1" : "2";
     setBoard(newBoard);
     setPlayer(player === 1 ? 2 : 1);
+    setTotalMoves(totalMoves +1);
   };
 
   const renderSquare = (id: number) => {
@@ -37,14 +41,27 @@ function TickTacToe() {
   const restart = () => {
     updateScore();
     setBoard(Array(9).fill(null));
+    setTotalMoves(0);
+    setTie(false);
   };
+
+  useEffect(() => {
+    if(!calcWinner(board) && totalMoves === 9){
+      setTie(true);
+    }
+  },[totalMoves])
 
   return (
     <div className="h-screen w-screen bg-beige-1 flex flex-col p-20">
-       {/* Turn */}
-      <h1 className="text-center p-10 text-5xl font-bold">
+       {/* Turn or latest result */}
+       {!tie && (
+        <h1 className="text-center p-10 text-5xl font-bold">
         {winner ? `Player ${winner} wins!` : `Player ${player} turn`}
       </h1>
+       )}
+      {tie && (
+        <h1 className="text-center p-10 text-5xl font-bold">The game is a tie</h1>
+      )}
       <div className="container mx-auto prose flex gap-5">
         {/*Main content */}
         <div className="flex-1 flex flex-col gap-5 ">
@@ -73,7 +90,6 @@ function TickTacToe() {
           </button>
         </div>
       </div>
-     
     </div>
   );
 }
